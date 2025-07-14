@@ -331,14 +331,13 @@ def group_tweets_by_state(tweets):
 
     for tweet in tweets:
         location = tweet_location(tweet)
-        for key,state in state_centroids.items():
-            distance = sqrt(pow((latitude(state) - latitude(location)),2) + pow(longitude(state) - longitude(location),2))
-            if distance < closest_centroid:
-                closest_centroid = distance
-                closest_key = key
-        tweets_by_state.update({closest_key : tweet})
-    print(tweets_by_state)
-
+        if location:
+            for key,state in state_centroids.items():
+                closest_state_code = min(state_centroids.keys(), key=lambda code: geo_distance(location, state_centroids[code]))
+            if closest_state_code in tweets_by_state:
+                tweets_by_state[closest_state_code].append(tweet)
+        else:
+                tweets_by_state[closest_state_code] = [tweet]
 
     return tweets_by_state
 
@@ -356,7 +355,19 @@ def average_sentiments(tweets_by_state):
     """
     averaged_state_sentiments = {}
     "*** YOUR CODE HERE ***"
+        for state, tweets in tweets_by_state.items():
+        total_sentiment = 0
+        count = 0
 
+        for tweet in tweets:
+            sentiment = analyze_tweet_sentiment(tweet)
+            if has_sentiment(sentiment):
+                total_sentiment += sentiment_value(sentiment)
+                count += 1
+        if count > 0:
+            averaged_state_sentiments[state] = total_sentiment/count 
+
+    return averaged_state_sentiments
     return averaged_state_sentiments
 
 
